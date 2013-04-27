@@ -198,6 +198,8 @@ def start(env):
     confirm_virtualenv(config)
     session = config['session name']
     virtualenv = config.get('virtualenv', None)
+    current_tmux = os.environ.get("TMUX", False)
+    os.environ['TMUX'] = ''
     virtualenv_path = None if not virtualenv else \
         os.path.expandvars(
             os.path.join(config['virtualenv'].get('path', None) or os.path.join(virtualenvs, session),
@@ -213,10 +215,11 @@ def start(env):
         except (ValueError, EOFError):
             input(prompt)
 
-        run('tmux -2 attach-session -t {session}', session=config['session name'])
+        attach_or_switch_to(session, current_tmux)
         return
 
     # Start the session.
+
     run('tmux new-session -d -s {session}', session=session)
 
     # Set session default path
@@ -224,6 +227,9 @@ def start(env):
         session=session,
         path=os.path.expandvars(config['project root']))
 
+    #This is a bit to generic to your tmux.conf.. 
+    #I use the hostname as well in the left-status and this always cuts it of
+    #perhaps make it optional?
     # Resize the left status area so that the full name of the environment will
     # fit.
     run('tmux set-option -t {session} status-left-length {length}',
@@ -317,9 +323,7 @@ def start(env):
             window_target=window_target,
             base_pindex=base_pindex)
 
-    run('tmux -2 attach-session -t {session}',
-        session=session)
-
+    attach_or_switch_to(session, current_tmux)
 
 def parse_args(args):
     """Return a function and its arguments based on 'args'.
@@ -375,6 +379,13 @@ def parse_args(args):
 
     return (handler, project)
 
+def attach_or_switch_to(session, current_tmux):
+    if current_tmux:
+        run('tmux -2 switch-client -t {session}',
+            session=session)
+    else:
+        run('tmux -2 attach-session -t {session}',
+            session=session)
 
 def completions(*args):
     """Generate available completions.
