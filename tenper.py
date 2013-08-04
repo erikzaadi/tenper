@@ -232,10 +232,10 @@ def start(env):
     #perhaps make it optional?
     # Resize the left status area so that the full name of the environment will
     # fit.
-    run('tmux set-option -t {session} status-left-length {length}',
-        session=config['session name'],
-        # There's brackets surrounding the name, thus: + 2.
-        length=len(config['session name'])+2)
+#    run('tmux set-option -t {session} status-left-length {length}',
+#        session=config['session name'],
+#        # There's brackets surrounding the name, thus: + 2.
+#        length=len(config['session name'])+2)
 
     # Add project specific environment variables.
     if config.get('environment'):
